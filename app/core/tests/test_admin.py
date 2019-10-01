@@ -49,3 +49,14 @@ class AdminSiteTests(TestCase):
         response = self.client.get(url)
 
         self.assertEqual(response.status_code, 200)
+
+    def test_create_user_page(self):
+        """Test that the create user page works.
+
+        :return: None
+        :raises AssertionError: add user page returns 200 when adding user
+        """
+        url = reverse("admin:core_user_add")
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
