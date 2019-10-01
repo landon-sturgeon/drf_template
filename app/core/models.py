@@ -16,8 +16,24 @@ class UserManager(BaseUserManager):
         :param extra_fields: any additional data about the user
         :return: user created and saved
         """
-        user = self.model(email=email, **extra_fields)
+        if not email:
+            raise ValueError("Users must have an email address.")
+
+        user = self.model(email=self.normalize_email(email), **extra_fields)
         user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email: str, password: str = None):
+        """Create and saves a new superuser with an email and a password.
+
+        :param email: email of the superuser (will be used as username)
+        :param password: password of the superuser
+        :return: superuser created and saved
+        """
+        user = self.create_user(email, password)
+        user.is_staff = True
+        user.is_superuser = True
         user.save(using=self._db)
         return user
 
