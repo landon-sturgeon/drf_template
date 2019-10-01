@@ -36,3 +36,16 @@ class AdminSiteTests(TestCase):
 
         self.assertContains(response, self.user.name)
         self.assertContains(response, self.user.email)
+
+    def test_user_change_page(self):
+        """Test that the user edit page works.
+
+        :return: None
+        :raises AssertionError: user change page returns 200 for user
+        """
+        url = reverse("admin:core_user_change", args=[self.user.id])
+        # /admin/core/user/`n`/
+
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
