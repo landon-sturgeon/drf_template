@@ -1,2 +1,5 @@
 # remove the .idea files
 .idea
+
+# remove any pycache documents
+*__pycache__*
