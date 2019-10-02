@@ -21,7 +21,7 @@ def create_user(**params):
 
 
 class PublicUsersAPITests(TestCase):
-    """Test class dedicated to testing the users api available to the public."""
+    """Class dedicated to testing the users api available to the public."""
 
     def setUp(self):
         """Assigns the self.client of the class to an instance of APIClient.
