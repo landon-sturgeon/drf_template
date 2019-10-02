@@ -36,7 +36,11 @@ class CommandTests(TestCase):
         :raises AssertionError: db wait time doesn't match test delay time
         :raises OperationError: known error for when the db can't connect
         """
-        with patch("django.db.utils.ConnectionHandler.__getitem__") as gi:
-            gi.side_effect = [OperationalError] * 5
-            call_command("wait_for_db")
+        with patch('django.db.utils.ConnectionHandler.__getitem__') as gi:
+            # purely for linting...
+            side_effect_list = [OperationalError] * 5
+            side_effect_list += [True]
+
+            gi.side_effect = side_effect_list
+            call_command('wait_for_db')
             self.assertEqual(gi.call_count, 6)
