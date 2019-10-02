@@ -2,7 +2,7 @@
 
 from rest_framework import serializers
 
-from core.models import Tag
+from core.models import Tag, Child
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -10,5 +10,14 @@ class TagSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tag
+        fields = ("id", "name")
+        read_only_fields = ("id", )
+
+
+class ChildSerializer(serializers.ModelSerializer):
+    """Serializer for child objects."""
+
+    class Meta:
+        model = Child
         fields = ("id", "name")
         read_only_fields = ("id", )

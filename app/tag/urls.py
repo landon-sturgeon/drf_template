@@ -8,6 +8,7 @@ from . import views
 
 router = DefaultRouter()
 router.register("tags", views.TagViewSet)
+router.register("children", views.ChildViewSet)
 
 app_name = "tags"
 
