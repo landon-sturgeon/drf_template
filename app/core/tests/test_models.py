@@ -1,6 +1,18 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 
+from .. import models
+
+
+def sample_user(email: str = "test@gmail.com", password: str = "testpass"):
+    """Create a sample user.
+
+    :param email: email to use for the sample user
+    :param password: password to user for the sample user
+    :return: newly created test user object
+    """
+    return get_user_model().objects.create_user(email, password)
+
 
 class ModelTests(TestCase):
     """Generic TestCase class for testing our models."""
@@ -55,3 +67,16 @@ class ModelTests(TestCase):
 
         self.assertTrue(user.is_superuser)
         self.assertTrue(user.is_staff)
+
+    def test_tag_str(self):
+        """Test the tag string representation.
+
+        :return: None
+        :raises AssertionError: fails when tag name doesn't show its __str__
+        """
+        tag = models.Tag.objects.create(
+            user=sample_user(),
+            name="test"
+        )
+
+        self.assertEqual(str(tag), tag.name)

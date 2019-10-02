@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.models import PermissionsMixin
+from django.conf import settings
 
 
 class UserManager(BaseUserManager):
@@ -48,3 +49,19 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     objects = UserManager()
     USERNAME_FIELD = "email"
+
+
+class Tag(models.Model):
+    """Tag to be used for an object."""
+    name = models.CharField(max_length=255)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+
+    def __str__(self):
+        """Return the name of the tag.
+
+        :return: String of the tag's name
+        """
+        return self.name
