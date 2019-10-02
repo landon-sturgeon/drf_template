@@ -81,14 +81,28 @@ class ModelTests(TestCase):
 
         self.assertEqual(str(tag), tag.name)
 
-    def test_object_str(self):
+    def test_child_str(self):
         """Test that the object string representation exists.
 
         :return: None
-        :raises AssertionError:
+        :raises AssertionError: fails to return name of the child
         """
         child = models.Child.objects.create(
             user=sample_user(),
             name="test name"
         )
         self.assertEqual(str(child), child.name)
+
+    def test_parent_str(self):
+        """Test that the object string representation exists.
+
+        :return: None
+        :raises AssertionError: fails to return name of the parent
+        """
+        parent = models.Parent.objects.create(
+            user=sample_user(),
+            address="test add 1",
+            age=34,
+            job="test 1"
+        )
+        self.assertEqual(str(parent), parent.name)

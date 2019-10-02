@@ -83,3 +83,27 @@ class Child(models.Model):
         :return: string of name of the child object
         """
         return self.name
+
+
+class Parent(models.Model):
+    """Generic parent object to be used later."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+    name = models.CharField(max_length=255)
+    address = models.CharField(max_length=255)
+    age = models.IntegerField()
+    job = models.CharField(max_length=255)
+
+    # many-to-many fields
+    children = models.ManyToManyField("Child")
+    tags = models.ManyToManyField("Tag")
+
+    def __str__(self):
+        """Return the name of the parent object.
+
+        :return: string of the name of the parent object
+        """
+        return self.name

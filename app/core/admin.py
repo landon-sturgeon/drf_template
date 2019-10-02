@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext as _
 
-from .models import User, Tag, Child
+from .models import User, Tag, Child, Parent
 
 
 class UserAdmin(BaseUserAdmin):
@@ -33,3 +33,4 @@ class UserAdmin(BaseUserAdmin):
 admin.site.register(User, UserAdmin)
 admin.site.register(Tag)
 admin.site.register(Child)
+admin.site.register(Parent)
