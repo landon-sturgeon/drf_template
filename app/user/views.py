@@ -1,5 +1,5 @@
 """Package containing the code for the user API views."""
-from rest_framework import generics
+from rest_framework import generics, authentication, permissions
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.settings import api_settings
 
@@ -17,3 +17,18 @@ class CreateTokenView(ObtainAuthToken):
 
     serializer_class = AuthTokenSerializer
     renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES
+
+
+class ManageUserView(generics.RetrieveUpdateAPIView):
+    """Manages the authenticated user."""
+
+    serializer_class = UserSerializer
+    authentication_classes = (authentication.TokenAuthentication, )
+    permission_classes = (permissions.IsAuthenticated, )
+
+    def get_object(self):
+        """Retrieves and returns authenticated user.
+
+        :return: authenticated user object
+        """
+        return self.request.user
