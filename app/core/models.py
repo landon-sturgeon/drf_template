@@ -65,3 +65,21 @@ class Tag(models.Model):
         :return: String of the tag's name
         """
         return self.name
+
+
+# This serves just as an example of how to create new generic objects into db
+class Child(models.Model):
+    """Generic Object to be used later."""
+
+    name = models.CharField(max_length=255)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+
+    def __str__(self):
+        """Return the name of the child object.
+
+        :return: string of name of the child object
+        """
+        return self.name

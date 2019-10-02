@@ -80,3 +80,15 @@ class ModelTests(TestCase):
         )
 
         self.assertEqual(str(tag), tag.name)
+
+    def test_object_str(self):
+        """Test that the object string representation exists.
+
+        :return: None
+        :raises AssertionError:
+        """
+        child = models.Child.objects.create(
+            user=sample_user(),
+            name="test name"
+        )
+        self.assertEqual(str(child), child.name)
