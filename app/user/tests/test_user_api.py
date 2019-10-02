@@ -9,6 +9,7 @@ from rest_framework import status
 
 
 CREATE_USER_URL = reverse("user:create")
+TOKEN_URL = reverse("user:token")
 
 
 def create_user(**params):
@@ -86,3 +87,65 @@ class PublicUsersAPITests(TestCase):
             email=payload["email"]
         ).exists()
         self.assertFalse(user_exists)
+
+    def test_create_token_for_user(self):
+        """Test that a token is created for the user.
+
+        :return: None
+        :raises AssertionError: token doesn't exists in response
+        """
+        payload = {
+            "email": "test@gmail.com",
+            "password": "testpass"
+        }
+        create_user(**payload)
+        response = self.client.post(TOKEN_URL, payload)
+
+        self.assertIn("token", response.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_create_token_invalid_credentials(self):
+        """Test that token is not created if invalid credentials are given.
+
+        :return: None
+        :raises AssertionError: token given with invalid credentials
+        """
+        create_user(
+            email="test@gmail.com",
+            password="testpass"
+        )
+        payload = {
+            "email": "test@gmail.com",
+            "password": "wrong"
+        }
+        response = self.client.post(TOKEN_URL, payload)
+        self.assertNotIn("token", response.data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_token_no_user(self):
+        """Test that token is not created if user doesn't exist.
+
+        :return: None
+        :raises AssertionError: user exists when not created in the first place
+        """
+        payload = {
+            "email": "test@gmail.com",
+            "password": "testpass"
+        }
+        response = self.client.post(TOKEN_URL, payload)
+
+        self.assertNotIn("token", response.data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_create_token_missing_field(self):
+        """Test that email and password are required.
+
+        :return: None
+        :raises AssertionError: user created without a password
+        """
+        response = self.client.post(
+            TOKEN_URL,
+            {"email": "one", "password": ""}
+        )
+        self.assertNotIn("token", response.data)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
