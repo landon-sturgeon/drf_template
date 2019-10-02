@@ -32,7 +32,9 @@ class TagViewSet(viewsets.GenericViewSet,
         serializer.save(user=self.request.user)
 
 
-class ChildViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+class ChildViewSet(viewsets.GenericViewSet,
+                   mixins.ListModelMixin,
+                   mixins.CreateModelMixin):
     """Manages children in the database."""
 
     authentication_classes = (TokenAuthentication, )
@@ -46,3 +48,11 @@ class ChildViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
         :return: Returns only authenticated children information
         """
         return self.queryset.filter(user=self.request.user).order_by("-name")
+
+    def perform_create(self, serializer):
+        """Create a new child object.
+
+        :param serializer: validation serializer used to create the child
+        :return: None
+        """
+        serializer.save(user=self.request.user)

@@ -86,3 +86,29 @@ class PrivateIngredientsApiTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]["name"], child.name)
+
+    def test_create_child_successful(self):
+        """Test creating a new child.
+
+        :return: None
+        :raises AssertException: fails creating a new child object
+        """
+        payload = {"name": "testname"}
+        self.client.post(CHILD_URL, payload)
+
+        exists = Child.objects.filter(
+            user=self.user,
+            name=payload["name"]
+        ).exists()
+        self.assertTrue(exists)
+
+    def test_create_ingredient_invalid(self):
+        """Test creating invalid ingredient fails.
+
+        :return: None
+        :raises AssertException: creates a child object with invalid payload
+        """
+        payload = {"name": ""}
+        response = self.client.post(CHILD_URL, payload)
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
