@@ -270,7 +270,7 @@ class PrivateParentApiTests(TestCase):
             "job": "test job"
         }
         url = detail_url(parent.id)
-
+        self.client.put(url, payload)
         parent.refresh_from_db()
 
         for key in payload.keys():

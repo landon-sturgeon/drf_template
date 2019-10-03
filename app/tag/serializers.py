@@ -45,3 +45,12 @@ class ParentDetailSerializer(ParentSerializer):
 
     children = ChildSerializer(many=True, read_only=True)
     tags = TagSerializer(many=True, read_only=True)
+
+
+class ParentImageSerializer(serializers.ModelSerializer):
+    """Serializer for uploading images to parents."""
+
+    class Meta:
+        model = Parent
+        fields = ("id", "image")
+        read_only_fields = ("id", )
