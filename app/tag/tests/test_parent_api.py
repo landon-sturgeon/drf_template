@@ -219,3 +219,50 @@ class PrivateParentApiTests(TestCase):
         self.assertEqual(children.count(), 2)
         self.assertIn(child1, children)
         self.assertIn(child2, children)
+
+    def test_partial_update_parent(self):
+        """Test updating a parent with PATCH.
+
+        :return: None
+        :raise AssertionError:
+        """
+        parent = sample_parent(user=self.user)
+        parent.tags.add(sample_tag(user=self.user))
+        new_tag = sample_tag(user=self.user, name="funny")
+
+        payload = {"name": "besty", "tags": [new_tag.id]}
+        url = detail_url(parent.id)
+        self.client.patch(url, payload)
+
+        parent.refresh_from_db()
+        self.assertEqual(parent.name, payload["name"])
+
+        tags = parent.tags.all()
+        self.assertEqual(len(tags), 1)
+        self.assertIn(new_tag, tags)
+
+    def test_full_update_parent(self):
+        """Test updating a parent with PUT.
+
+        :return: None
+        :raises AssertionError:
+        """
+        parent = sample_parent(user=self.user)
+        parent.tags.add(sample_tag(user=self.user))
+        payload = {
+            "name": "Excellent",
+            "age": 200,
+            "address": "123 Fake Street",
+            "job": "test job"
+        }
+        url = detail_url(parent.id)
+        response = self.client.put(url, payload)
+
+        parent.refresh_from_db()
+
+        for key in payload.keys():
+            self.assertEqual(payload[key], getattr(parent, key))
+
+        # a PUT should clear all fields not assigned
+        tags = parent.tags.all()
+        self.assertEqual(len(tags), 0)
