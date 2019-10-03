@@ -1,7 +1,23 @@
+import uuid
+import os
+
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.models import PermissionsMixin
 from django.conf import settings
+
+
+def parent_image_file_path(instance, filename):
+    """Generate file path for the new parent image.
+
+    :param instance: instance of parent object that's creating the path
+    :param filename: original filename of the image file
+    :return: filepath of the new image
+    """
+    extension = filename.split(".")[-1]
+    filename = f"{uuid.uuid4()}.{extension}"
+
+    return os.path.join("uploads/parent/", filename)
 
 
 class UserManager(BaseUserManager):
@@ -100,6 +116,9 @@ class Parent(models.Model):
     # many-to-many fields
     children = models.ManyToManyField("Child")
     tags = models.ManyToManyField("Tag")
+
+    # image field
+    image = models.ImageField(null=True, upload_to=parent_image_file_path)
 
     def __str__(self):
         """Return the name of the parent object.

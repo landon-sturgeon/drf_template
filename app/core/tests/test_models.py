@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 
@@ -106,3 +108,22 @@ class ModelTests(TestCase):
             job="test 1"
         )
         self.assertEqual(str(parent), parent.name)
+
+    # the patch will create a uuid4 for us
+    @patch("uuid.uuid4")
+    def test_parent_file_name_uuid(self, mock_uuid):
+        """Test that image is saved in the correct location.
+
+        :param mock_uuid: fake uuid passed in from the patch decorator
+        :return: None
+        :raises AssertionError: fails if expected file path != uuid file path
+        """
+        uuid = "test-uuid"
+
+        # mock_uuid available with patch decorator
+        mock_uuid.return_value = uuid
+
+        file_path = models.parent_image_file_path(None, "my_image.jpg")
+        exp_path = f"uploads/parent/{uuid}.jpg"
+
+        self.assertEqual(file_path, exp_path)
