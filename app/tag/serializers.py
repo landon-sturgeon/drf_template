@@ -38,3 +38,10 @@ class ParentSerializer(serializers.ModelSerializer):
         model = Parent
         fields = ("id", "name", "age", "address", "job", "children", "tags")
         read_only_fields = ("id", )
+
+
+class ParentDetailSerializer(ParentSerializer):
+    """Serialize a parent detail."""
+
+    children = ChildSerializer(many=True, read_only=True)
+    tags = TagSerializer(many=True, read_only=True)

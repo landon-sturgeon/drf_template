@@ -58,3 +58,12 @@ class ParentViewSet(viewsets.ModelViewSet):
         :return: all the objects associated with the authenticated user
         """
         return self.queryset.filter(user=self.request.user)
+
+    def get_serializer_class(self):
+        """Return appropriate serializer class.
+
+        :return: serializer class
+        """
+        if self.action == "retrieve":
+            return serializers.ParentDetailSerializer
+        return self.serializer_class

@@ -7,11 +7,40 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import Parent
+from core.models import Parent, Tag, Child
 
-from tag.serializers import ParentSerializer
+from tag.serializers import ParentSerializer, ParentDetailSerializer
 
 PARENT_URL = reverse("tags:parent-list")
+
+
+def detail_url(parent_id: int):
+    """Return parent detail url.
+
+    :param parent_id: id of the parent object to return details for
+    :return: detail parent url
+    """
+    return reverse("tags:parent-detail", args=[parent_id])
+
+
+def sample_tag(user, name: str = "test_tag"):
+    """Create and return a sample tag.
+
+    :param user: user to associate the tag with
+    :param name: name of the tag
+    :return: new tag object
+    """
+    return Tag.objects.create(user=user, name=name)
+
+
+def sample_child(user, name: str = "test_child"):
+    """Create and return a sample child.
+
+    :param user: user to associate the tag with
+    :param name: name of the tag
+    :return: new child object
+    """
+    return Child.objects.create(user=user, name=name)
 
 
 def sample_parent(user, **params):
@@ -105,4 +134,20 @@ class PrivateParentApiTests(TestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data, serializer.data)
+
+    def test_view_parent_detail(self):
+        """Test viewing a parent detail.
+
+        :return: None
+        :raises AssertionError:
+        """
+        parent = sample_parent(user=self.user)
+        parent.tags.add(sample_tag(user=self.user))
+        parent.children.add(sample_child(user=self.user))
+
+        url = detail_url(parent.id)
+        response = self.client.get(url)
+
+        serializer = ParentDetailSerializer(parent)
         self.assertEqual(response.data, serializer.data)
