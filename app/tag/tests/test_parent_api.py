@@ -1,8 +1,13 @@
 """Module containing the logic for testing the parent API."""
 
+import tempfile
+import os
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
+
+from PIL import Image
 
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -12,6 +17,15 @@ from core.models import Parent, Tag, Child
 from tag.serializers import ParentSerializer, ParentDetailSerializer
 
 PARENT_URL = reverse("tags:parent-list")
+
+
+def image_upload_url(parent_id):
+    """Return url for parent image upload.
+
+    :param parent_id: id of the parent to associate image with
+    :return: url of the associated image
+    """
+    return reverse("tags:parent-upload-image", args=[parent_id])
 
 
 def detail_url(parent_id: int):
@@ -256,7 +270,6 @@ class PrivateParentApiTests(TestCase):
             "job": "test job"
         }
         url = detail_url(parent.id)
-        response = self.client.put(url, payload)
 
         parent.refresh_from_db()
 
@@ -266,3 +279,63 @@ class PrivateParentApiTests(TestCase):
         # a PUT should clear all fields not assigned
         tags = parent.tags.all()
         self.assertEqual(len(tags), 0)
+
+
+class ParentImageUploadTest(TestCase):
+    """Tests the image upload process and associations."""
+
+    def setUp(self):
+        """Assign an APIClient and user to the test class.
+
+        :return: None
+        """
+        self.client = APIClient()
+        self.user = get_user_model().objects.create_user(
+            "test@gmail.com",
+            "testpass"
+        )
+        self.client.force_authenticate(self.user)
+        self.parent = sample_parent(user=self.user)
+
+    def tearDown(self) -> None:
+        """Remove the test image from the /vol/ directory.
+
+        :return: None
+        """
+        self.parent.image.delete()
+
+    def test_upload_image_to_recipe(self):
+        """Test uploading an image to recipe.
+
+        :return: None
+        :raises AssertionError:
+        """
+        url = image_upload_url(self.parent.id)
+        with tempfile.NamedTemporaryFile(suffix=".jpg") as ntf:
+            img = Image.new("RGB", (10, 10))
+            img.save(ntf, format="JPEG")
+
+            # needed as saving the file points to the end of the file
+            # .seek() puts the file pointer back to the beginning of the file
+            ntf.seek(0)
+            response = self.client.post(
+                url, {"image": ntf},
+                format="multipart"
+            )
+        self.parent.refresh_from_db()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("image", response.data)
+        self.assertTrue(os.path.exists(self.parent.image.path))
+
+    def test_upload_image_bad_request(self):
+        """Test uploading an invalid image.
+
+        :return: None
+        :raises AssertionError:
+        """
+        url = image_upload_url(self.parent.id)
+        response = self.client.post(
+            url, {"image": "notimage"}, format="multipart"
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
