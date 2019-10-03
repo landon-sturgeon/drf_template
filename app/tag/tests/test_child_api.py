@@ -7,7 +7,7 @@ from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
 
-from core.models import Child
+from core.models import Child, Parent
 
 from tag.serializers import ChildSerializer
 
@@ -112,3 +112,55 @@ class PrivateIngredientsApiTests(TestCase):
         response = self.client.post(CHILD_URL, payload)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_retrieve_children_assigned_to_parents(self):
+        """Test filtering children by those assigned to parents.
+
+        :return: None
+        :raises AssertionError: fails when parents without the tag are returned
+        """
+        child1 = Child.objects.create(user=self.user, name="child1")
+        child2 = Child.objects.create(user=self.user, name="child2")
+        parent = Parent.objects.create(
+            name="parent",
+            age=1,
+            address="address 1",
+            job="job 1",
+            user=self.user
+        )
+        parent.children.add(child1)
+        response = self.client.get(CHILD_URL, {"assigned_only": 1})
+
+        serializer1 = ChildSerializer(child1)
+        serializer2 = ChildSerializer(child2)
+        self.assertIn(serializer1.data, response.data)
+        self.assertNotIn(serializer2, response.data)
+
+    def test_retrieve_children_assigned_unique(self):
+        """Test filtering children by assigned returns unique items.
+
+        :return: None
+        :raises AssertionError: fails when both children are returned
+        """
+        child1 = Child.objects.create(user=self.user, name="child1")
+        Child.objects.create(user=self.user, name="child2")
+        parent1 = Parent.objects.create(
+            name="parent1",
+            age=1,
+            address="address 1",
+            job="job 1",
+            user=self.user
+        )
+        parent1.children.add(child1)
+        parent2 = Parent.objects.create(
+            name="parent2",
+            age=2,
+            address="address 2",
+            job="job 2",
+            user=self.user
+        )
+        parent2.children.add(child1)
+
+        response = self.client.get(CHILD_URL, {"assigned_only": 1})
+
+        self.assertEqual(len(response.data), 1)
