@@ -2,7 +2,7 @@ from rest_framework import viewsets, mixins
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
-from core.models import Tag, Child
+from core.models import Tag, Child, Parent
 from . import serializers
 
 
@@ -42,3 +42,19 @@ class ChildViewSet(BaseApiAttrViewSet):
 
     queryset = Child.objects.all()
     serializer_class = serializers.ChildSerializer
+
+
+class ParentViewSet(viewsets.ModelViewSet):
+    """Manages parents in the database"""
+
+    serializer_class = serializers.ParentSerializer
+    queryset = Parent.objects.all()
+    authentication_classes = (TokenAuthentication, )
+    permission_classes = (IsAuthenticated, )
+
+    def get_queryset(self):
+        """Return parents for the the authenticated user.
+
+        :return: all the objects associated with the authenticated user
+        """
+        return self.queryset.filter(user=self.request.user)
