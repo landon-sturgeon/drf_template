@@ -331,7 +331,7 @@ class ParentImageUploadTest(TestCase):
         """Test uploading an invalid image.
 
         :return: None
-        :raises AssertionError:
+        :raises AssertionError: fails when invalid image is actually uploaded
         """
         url = image_upload_url(self.parent.id)
         response = self.client.post(
@@ -339,3 +339,56 @@ class ParentImageUploadTest(TestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_filter_recipes_by_tags(self):
+        """Test returning parents with specific tags.
+
+        :return: None
+        :raises AssertionError: wrong parent is returned given a tag
+        """
+        parent1 = sample_parent(user=self.user, name="Bill")
+        parent2 = sample_parent(user=self.user, name="Ted")
+        tag1 = sample_tag(user=self.user, name="tag1")
+        tag2 = sample_tag(user=self.user, name="tag2")
+        parent1.tags.add(tag1)
+        parent2.tags.add(tag2)
+        parent3 = sample_parent(user=self.user, name="this is a test")
+
+        response = self.client.get(
+            PARENT_URL,
+            {"tags": "{},{}".format(tag1.id, tag2.id)}
+        )
+
+        serializer1 = ParentSerializer(parent1)
+        serializer2 = ParentSerializer(parent2)
+        serializer3 = ParentSerializer(parent3)
+
+        self.assertIn(serializer1.data, response.data)
+        self.assertIn(serializer2.data, response.data)
+        self.assertNotIn(serializer3.data, response.data)
+
+    def test_filter_parents_by_children(self):
+        """Test returning parents with specific children.
+
+        :return: None
+        :raises AssertionError: wrong parent is returned given a child
+        """
+        parent1 = sample_parent(user=self.user, name="Steve")
+        parent2 = sample_parent(user=self.user, name="Charles")
+        child1 = sample_child(user=self.user, name="child1")
+        child2 = sample_child(user=self.user, name="child2")
+        parent1.children.add(child1)
+        parent2.children.add(child2)
+        parent3 = sample_parent(user=self.user, name="what is this??")
+
+        response = self.client.get(
+            PARENT_URL,
+            {"children": "{},{}".format(child1.id, child2.id)}
+        )
+
+        serializer1 = ParentSerializer(parent1)
+        serializer2 = ParentSerializer(parent2)
+        serializer3 = ParentSerializer(parent3)
+        self.assertIn(serializer1.data, response.data)
+        self.assertIn(serializer2.data, response.data)
+        self.assertNotIn(serializer3.data, response.data)

@@ -56,12 +56,31 @@ class ParentViewSet(viewsets.ModelViewSet):
     authentication_classes = (TokenAuthentication, )
     permission_classes = (IsAuthenticated, )
 
+    @staticmethod
+    def _params_to_ints(query_string):
+        """Convert a string of IDs to a list of integers.
+
+        :param query_string: string of ids to be returned
+        :return: list of object ids
+        """
+        return [int(str_id) for str_id in query_string.split(",")]
+
     def get_queryset(self):
         """Return parents for the the authenticated user.
 
         :return: all the objects associated with the authenticated user
         """
-        return self.queryset.filter(user=self.request.user)
+        tags = self.request.query_params.get("tags")
+        children = self.request.query_params.get("children")
+        queryset = self.queryset
+        if tags:
+            tag_ids = self._params_to_ints(tags)
+            queryset = queryset.filter(tags__id__in=tag_ids)
+        if children:
+            children_ids = self._params_to_ints(children)
+            queryset = queryset.filter(children__id__in=children_ids)
+
+        return queryset.filter(user=self.request.user)
 
     def get_serializer_class(self):
         """Return appropriate serializer class.
