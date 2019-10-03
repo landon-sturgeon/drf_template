@@ -151,3 +151,71 @@ class PrivateParentApiTests(TestCase):
 
         serializer = ParentDetailSerializer(parent)
         self.assertEqual(response.data, serializer.data)
+
+    def test_create_basic_parent(self):
+        """Test creating parent.
+
+        :return: None
+        :raises AssertionError: fails to create a parent object with right data
+        """
+        payload = {
+            "name": "Ted",
+            "age": 35,
+            "address": "111 Nothing",
+            "job": "Test Job"
+        }
+        response = self.client.post(PARENT_URL, payload)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        parent = Parent.objects.get(id=response.data["id"])
+
+        for key in payload.keys():
+            self.assertEqual(payload[key], getattr(parent, key))
+
+    def test_create_parent_with_tags(self):
+        """Test creating a recipe with tags.
+
+        :return: None
+        :raises AssertionError: fails if both tags aren't in parent
+        """
+        tag1 = sample_tag(user=self.user, name="Bill")
+        tag2 = sample_tag(user=self.user, name="Bob")
+        payload = {
+            "name": "Helen",
+            "tags": [tag1.id, tag2.id],
+            "age": 20,
+            "address": "123 Whatever",
+            "job": "test job"
+        }
+        response = self.client.post(PARENT_URL, payload)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        parent = Parent.objects.get(id=response.data["id"])
+        tags = parent.tags.all()
+        self.assertEqual(tags.count(), 2)
+        self.assertIn(tag1, tags)
+        self.assertIn(tag2, tags)
+
+    def test_create_parent_with_children(self):
+        """Test creating a recipe with children.
+
+        :return: None
+        :raises AssertionError: fails if both children aren't in parent
+        """
+        child1 = sample_child(user=self.user, name="Bill")
+        child2 = sample_child(user=self.user, name="Bob")
+        payload = {
+            "name": "Helen",
+            "children": [child1.id, child2.id],
+            "age": 20,
+            "address": "123 Whatever",
+            "job": "test job"
+        }
+        response = self.client.post(PARENT_URL, payload)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        parent = Parent.objects.get(id=response.data["id"])
+        children = parent.children.all()
+        self.assertEqual(children.count(), 2)
+        self.assertIn(child1, children)
+        self.assertIn(child2, children)

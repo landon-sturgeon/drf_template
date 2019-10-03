@@ -67,3 +67,11 @@ class ParentViewSet(viewsets.ModelViewSet):
         if self.action == "retrieve":
             return serializers.ParentDetailSerializer
         return self.serializer_class
+
+    def perform_create(self, serializer):
+        """Create a new parent object.
+
+        :param serializer: parent serializer used to authenticate the user
+        :return: new parent object
+        """
+        serializer.save(user=self.request.user)

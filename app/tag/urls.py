@@ -9,7 +9,7 @@ from . import views
 router = DefaultRouter()
 router.register("tags", views.TagViewSet)
 router.register("children", views.ChildViewSet)
-router.register("recipes", views.ParentViewSet)
+router.register("parents", views.ParentViewSet)
 
 app_name = "tags"
 
